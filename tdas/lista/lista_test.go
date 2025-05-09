@@ -276,22 +276,19 @@ func TestIterExt_Recorrer(t *testing.T) {
 
 func TestIterExt_InsertarPrimero(t *testing.T) {
 	lista := TDALista.CrearListaEnlazada[float64]()
+
+	lista.InsertarPrimero(3.141592653589793238462)
+	lista.InsertarPrimero(1.618033988749894848204)
+
 	iter := lista.Iterador()
-
-	require.False(t, iter.HaySiguiente(), "No debería haber nada para ver")
-
-	iter.Insertar(2.718281828459045)
-
-	require.EqualValues(t, lista.VerPrimero(), iter.VerActual(), "El primer elemento de la lista debe ser el que insertó el iterador")
-
+	require.True(t, iter.HaySiguiente(), "Debería haber algo para ver")
+	require.EqualValues(t, lista.VerPrimero(), iter.VerActual(), "El primer elemento de la lista debe ser el que está apuntado por el iterador")
+	iter.Insertar(2.718281828459045235360)
+	require.EqualValues(t, lista.VerPrimero(), iter.VerActual(), "El valor primer elemento de la lista debe ser el que inserto el iterador")
 	require.True(t, iter.HaySiguiente(), "Debería haber algo más para ver")
 
-	iter.Insertar(3.141592653589793)
-
-	require.EqualValues(t, lista.VerPrimero(), iter.VerActual(), "El primer elemento de la lista debe ser el que insertó el iterador")
-
-	iter.Siguiente()
-	require.EqualValues(t, 2.718281828459045, iter.VerActual(), "El siguiente elemento debe ser el anterior que insertamos")
+	lista.InsertarPrimero(1.4142135623730950488)
+	require.EqualValues(t, 1.4142135623730950488, lista.VerPrimero(), "El valor insertado con InsertarPrimero debería estar al principio de la lista")
 }
 
 func TestIterExt_InsertarUltimo(t *testing.T) {
