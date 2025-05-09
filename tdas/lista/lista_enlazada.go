@@ -27,7 +27,7 @@ func CrearListaEnlazada[T any]() Lista[T] {
 }
 
 func (lista *lista_enlazada[T]) EstaVacia() bool {
-	return lista.primero == nil
+	return lista.primero == nil && lista.ultimo == nil && lista.largo == 0
 }
 
 func (lista *lista_enlazada[T]) InsertarPrimero(dato T) {
