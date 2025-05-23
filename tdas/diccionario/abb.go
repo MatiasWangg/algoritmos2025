@@ -41,11 +41,11 @@ func (abb *abb[K, V]) buscar(clave K, nodo *nodoAbb[K, V], padre *nodoAbb[K, V])
 
 	if comparacion == 0 {
 		return nodo, padre
-	} else if comparacion < 0 {
-		return abb.buscar(clave, nodo.izquierdo, nodo)
-	} else {
-		return abb.buscar(clave, nodo.derecho, nodo)
 	}
+	if comparacion < 0 {
+		return abb.buscar(clave, nodo.izquierdo, nodo)
+	}
+	return abb.buscar(clave, nodo.derecho, nodo)
 }
 
 func (abb *abb[K, V]) Pertenece(clave K) bool {
@@ -94,17 +94,7 @@ func (abb *abb[K, V]) Borrar(clave K) V {
 
 	dato := nodo.dato
 
-	if nodo.izquierdo == nil && nodo.derecho == nil {
-		if padre != nil {
-			if abb.cmp(clave, padre.clave) < 0 {
-				padre.izquierdo = nil
-			} else {
-				padre.derecho = nil
-			}
-		} else {
-			abb.raiz = nil
-		}
-	} else if nodo.izquierdo == nil || nodo.derecho == nil {
+	if nodo.izquierdo == nil || nodo.derecho == nil {
 		var hijo *nodoAbb[K, V]
 		if nodo.izquierdo != nil {
 			hijo = nodo.izquierdo
@@ -122,26 +112,33 @@ func (abb *abb[K, V]) Borrar(clave K) V {
 			abb.raiz = hijo
 		}
 	} else {
-		padreSustituto := nodo
-		sustituto := nodo.derecho
-
-		for sustituto.izquierdo != nil {
-			padreSustituto = sustituto
-			sustituto = sustituto.izquierdo
-		}
-
-		nodo.clave = sustituto.clave
-		nodo.dato = sustituto.dato
-
-		if padreSustituto.izquierdo == sustituto {
-			padreSustituto.izquierdo = sustituto.derecho
-		} else {
-			padreSustituto.derecho = sustituto.derecho
-		}
+		abb.borrarDosHijos(nodo)
 	}
 
 	abb.cantidad--
 	return dato
+}
+
+func (abb *abb[K, V]) borrarDosHijos(nodo *nodoAbb[K, V]) {
+	sustituto, padreSustituto := buscarSustituto(nodo)
+	nodo.clave = sustituto.clave
+	nodo.dato = sustituto.dato
+
+	if padreSustituto.izquierdo == sustituto {
+		padreSustituto.izquierdo = sustituto.derecho
+	} else {
+		padreSustituto.derecho = sustituto.derecho
+	}
+}
+
+func buscarSustituto[K comparable, V any](nodo *nodoAbb[K, V]) (*nodoAbb[K, V], *nodoAbb[K, V]) {
+	padre := nodo
+	actual := nodo.derecho
+	for actual.izquierdo != nil {
+		padre = actual
+		actual = actual.izquierdo
+	}
+	return actual, padre
 }
 
 //----------------------------------Iteradores-----------------------------------------
@@ -158,28 +155,30 @@ func (nodo *nodoAbb[K, V]) iterarRangos(desde *K, hasta *K, cmp func(K, K) int, 
 	if nodo == nil {
 		return true
 	}
-	cmpDesde := 0
+
+	cmpDesde := 1
 	if desde != nil {
 		cmpDesde = cmp(nodo.clave, *desde)
 	}
 
-	cmpHasta := 0
+	cmpHasta := -1
 	if hasta != nil {
 		cmpHasta = cmp(nodo.clave, *hasta)
 	}
 
-	if cmpDesde >= 0 {
+	if cmpDesde > 0 {
 		if !nodo.izquierdo.iterarRangos(desde, hasta, cmp, visitar) {
 			return false
 		}
 	}
+
 	if cmpDesde >= 0 && cmpHasta <= 0 {
 		if !visitar(nodo.clave, nodo.dato) {
 			return false
 		}
 	}
 
-	if cmpHasta <= 0 {
+	if cmpHasta < 0 {
 		if !nodo.derecho.iterarRangos(desde, hasta, cmp, visitar) {
 			return false
 		}
