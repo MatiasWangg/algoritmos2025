@@ -1,1 +1,0 @@
-# algoritmos2025
