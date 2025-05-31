@@ -1,7 +1,7 @@
 package sistemavuelos
 
 import (
-	"tp2/Vuelo"
+	"tp2/vuelo"
 	"tdas/diccionario"
 )
 
