@@ -16,11 +16,8 @@ func CrearSistema() *Sistema {
 }
 
 //Firmas de primitivas provisorias 
-// func (s *Sistema) AgregarArchivo() 
 
 // func (s *Sistema) VerTablero() 
-
-// func (s *Sistema) InfoVuelo() 
 
 // func (s *Sistema) PrioridadVuelos() 
 

@@ -25,24 +25,33 @@ func procesarComando(comando string, sistemaVuelos *sistema.Sistema) error{
 	partes := strings.Fields(comando)
 	
 	if len(partes) == 0 {
-		return fmt.Errorf("Comando no reconocido")
+		return fmt.Errorf("comando no reconocido")
 	}
 	
 	switch partes[0] {
 	case "agregar_archivo":
-		
+		if len(partes) != 2 {
+			return fmt.Errorf("error en agregar archivo")
+		}
+		archivo := partes[1]
+		return sistemaVuelos.AgregarArchivo(archivo)
+
 	case "ver_tablero":
-	
+		return nil
 	case "info_vuelo":
-
+		if len(partes) != 2 {
+		return fmt.Errorf("error en info_vuelo")
+		}
+		codigo := partes[1]
+		return sistemaVuelos.InfoVuelo(codigo)
 	case "prioridad_vuelos":
-	
+		return nil
 	case "siguiente_vuelo":
-	
+		return nil
 	case "borrar":
-
+		return nil
 	default:
-		return fmt.Errorf("Comando no reconocido")
+		return fmt.Errorf("comando no reconocido")
 	}
 }
 
