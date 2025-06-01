@@ -10,6 +10,8 @@ import (
 	"tp2/vuelo"
 )
 
+const LAYOUT = "2006-01-02T15:04:05"
+
 //Lugar donde se van a implementar las firmas de primitivas
 
 func (s *Sistema) AgregarArchivo(archivo string) error {
@@ -32,7 +34,7 @@ func (s *Sistema) AgregarArchivo(archivo string) error {
 			return fmt.Errorf("error al parsear prioridad")
 		}
 
-		fecha, err := time.Parse("2006-01-02T15:04:05", datos[6])
+		fecha, err := time.Parse(LAYOUT, datos[6])
 		if err != nil {
 			return fmt.Errorf("error al parsear fecha")
 		}
@@ -58,7 +60,12 @@ func (s *Sistema) AgregarArchivo(archivo string) error {
 			prioridad, retraso, tiempo, fecha, cancelado,
 		)
 
+		//Se ingresa el vuelo al Hash
 		s.vuelos.Guardar(datos[0], vuelo)
+
+		//Se ingresa el vuelo al ABB
+		fechaStr := fecha.Format(LAYOUT)
+		s.vuelosABB.Guardar(fechaStr, vuelo)
 	}
 
 	if err := scanner.Err(); err != nil {
@@ -76,12 +83,9 @@ func (s *Sistema) InfoVuelo(codigo string) error {
 
 	vuelo:= s.vuelos.Obtener(codigo)
 
-	canceladoInt := 0
-	if vuelo.Cancelado {
-		canceladoInt = 1
-	}
+	canceladoInt := vuelo.EstaCanceladoInt()
 
-	fechaStr := vuelo.Fecha.Format("2006-01-02T15:04:05")
+	fechaStr := vuelo.Fecha.Format(LAYOUT)
 
 	fmt.Printf("%s %s %s %s %s %d %s %02d %d %d\n",
 		vuelo.Codigo,
