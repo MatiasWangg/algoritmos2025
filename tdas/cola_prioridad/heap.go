@@ -22,22 +22,31 @@ func CrearHeap[T any](funcion_cmp func(T, T) int) ColaPrioridad[T] {
 	}
 }
 func CrearHeapArr[T any](arreglo []T, funcion_cmp func(T, T) int) ColaPrioridad[T] {
+	capacidad := len(arreglo)
+	if capacidad < _CAPACIDAD_MINIMA {
+		capacidad = _CAPACIDAD_MINIMA
+	}
 
-	copia := make([]T, len(arreglo))
-	copy(copia, arreglo)
+	datos := make([]T, capacidad)
+	copy(datos, arreglo)
 
 	heapArr := &colaConPrioridad[T]{
-		datos: copia, // Trabajar con la copia
-		cant:  len(copia),
+		datos: datos,
+		cant:  len(arreglo),
 		cmp:   funcion_cmp,
 	}
-	heapify(heapArr.datos, heapArr.cmp)
+
+	heapify(heapArr.datos[:heapArr.cant], heapArr.cmp)
 	return heapArr
 }
 
 func (heap *colaConPrioridad[T]) EstaVacia() bool { return heap.cant == 0 }
 func (heap *colaConPrioridad[T]) Encolar(dato T) {
-	heap.gestionarCapacidadCola()
+	if heap.cant == len(heap.datos) {
+		tamanioHeap := len(heap.datos)
+		tamanioHeap *= _FACTOR_CAMBIO
+		heap.redimensionarCola(tamanioHeap)
+	}
 	heap.datos[heap.cant], heap.cant = dato, heap.cant+1
 	heap.upHeap(heap.cant - 1)
 }
@@ -56,7 +65,11 @@ func (heap *colaConPrioridad[T]) Desencolar() T {
 	swap(heap.datos, 0, heap.cant-1)
 	heap.cant--
 	downheap(heap.datos, 0, heap.cant, heap.cmp)
-	heap.gestionarCapacidadCola()
+	if len(heap.datos)/_MODIFICADOR_TAMANIO >= heap.cant && len(heap.datos) > _CAPACIDAD_MINIMA {
+		tamanioHeap := len(heap.datos)
+		tamanioHeap /= _FACTOR_CAMBIO
+		heap.redimensionarCola(tamanioHeap)
+	}
 	return maximo
 }
 func (heap *colaConPrioridad[T]) Cantidad() int { return heap.cant }
@@ -106,18 +119,9 @@ func (heap *colaConPrioridad[T]) upHeap(i int) {
 		i = padre
 	}
 }
-func (heap *colaConPrioridad[T]) gestionarCapacidadCola() {
-	tamanioHeap := len(heap.datos)
-	if heap.cant == 0 {
-		tamanioHeap = _CAPACIDAD_MINIMA
-	} else if heap.cant == len(heap.datos) {
-		tamanioHeap *= _FACTOR_CAMBIO
-	} else if len(heap.datos)/_MODIFICADOR_TAMANIO >= heap.cant && len(heap.datos)/_FACTOR_CAMBIO >= _CAPACIDAD_MINIMA {
-		tamanioHeap /= _FACTOR_CAMBIO
-	} else {
-		return
-	}
-	nuevosDatos := make([]T, tamanioHeap)
+
+func (heap *colaConPrioridad[T]) redimensionarCola(nuevoTamaño int) {
+	nuevosDatos := make([]T, nuevoTamaño)
 	copy(nuevosDatos, heap.datos[:heap.cant])
 	heap.datos = nuevosDatos
 }

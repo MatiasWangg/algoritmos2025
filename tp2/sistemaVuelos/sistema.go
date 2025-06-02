@@ -7,6 +7,7 @@ import (
 
 type Sistema struct {
 	vuelos diccionario.Diccionario[string, *vuelo.Vuelo] //string (clave) es codigo del vuelo
+	//La clave y valor del abb puede ser cambiados, puse estos porque pense que era la mejor idea
 	vuelosABB diccionario.DiccionarioOrdenado[string, *vuelo.Vuelo] //string (clave) es el horario del vuelo
 }
 

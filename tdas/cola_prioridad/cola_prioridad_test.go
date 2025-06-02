@@ -14,39 +14,15 @@ const (
 
 func compararNumeros(a, b int) int                { return a - b }
 func compararCadenas(cadena1, cadena2 string) int { return strings.Compare(cadena1, cadena2) }
-func TestHeapVacio(t *testing.T) {
+func TestHeapVacioComportamiento(t *testing.T) {
 	heap, r := TDAHeap.CrearHeap(compararCadenas), require.New(t)
+	r.True(heap.EstaVacia(), "el heap deberia estar vacio inicialmente")
 	r.EqualValues(0, heap.Cantidad(), "el heap deberia estar vacio inicialmente")
 	r.PanicsWithValue(_MENSAJE_PANIC, func() { heap.VerMax() }, "deberia lanzar un panico al intentar ver el maximo de un heap vacio")
 	r.PanicsWithValue(_MENSAJE_PANIC, func() { heap.Desencolar() }, "deberia lanzar un panico al intentar desencolar un elemento de un heap vacio")
 }
-func Test_EstaVacia(t *testing.T) {
-	heap, r := TDAHeap.CrearHeap(compararCadenas), require.New(t)
-	r.True(heap.EstaVacia(), "el heap deberia estar vacio inicialmente")
-	heap.Encolar("A")
-	r.False(heap.EstaVacia(), "el heap no deberia estar vacio despues de encolar un elemento")
-	heap.Desencolar()
-	r.True(heap.EstaVacia(), "el heap deberia estar vacio despues de desencolar el unico elemento")
-}
-func Test_Cantidad(t *testing.T) {
-	heap, r := TDAHeap.CrearHeap(compararCadenas), require.New(t)
-	r.EqualValues(0, heap.Cantidad(), "el heap deberia tener cero elementos inicialmente")
-	heap.Encolar("A")
-	r.EqualValues(1, heap.Cantidad(), "el heap deberia tener un elemento despues de encolar uno")
-	heap.Encolar("B")
-	r.EqualValues(2, heap.Cantidad(), "el heap deberia tener dos elementos despues de encolar otro")
-}
-func Test_VerMax(t *testing.T) {
-	heap, r := TDAHeap.CrearHeap(compararCadenas), require.New(t)
 
-	heap.Encolar("C")
-	heap.Encolar("A")
-	heap.Encolar("B")
-
-	r.Equal("C", heap.VerMax(), "el maximo del heap deberia ser 'C'")
-	r.EqualValues(3, heap.Cantidad(), "el heap deberia contener tres elementos despues de encolarlos")
-}
-func Test_EncolarNumeroYString(t *testing.T) {
+func Test_NumerosYStrings(t *testing.T) {
 	heapString, heapInt, r := TDAHeap.CrearHeap(compararCadenas), TDAHeap.CrearHeap(compararNumeros), require.New(t)
 	heapString.Encolar("C")
 	heapInt.Encolar(10)
@@ -55,38 +31,7 @@ func Test_EncolarNumeroYString(t *testing.T) {
 	r.Equal("C", heapString.VerMax(), "el maximo del heap de strings deberia ser 'C'")
 	r.Equal(10, heapInt.VerMax(), "el maximo del heap de enteros deberia ser 10")
 }
-func Test_EncolarYDesencolar(t *testing.T) {
-	heap, r := TDAHeap.CrearHeap(compararCadenas), require.New(t)
-	heap.Encolar("C")
-	heap.Encolar("A")
-	heap.Encolar("B")
-	r.EqualValues(3, heap.Cantidad(), "el heap deberia contener tres elementos despues de encolarlos")
-	r.Equal("C", heap.VerMax(), "el maximo del heap deberia ser 'C'")
-	r.Equal("C", heap.Desencolar(), "el maximo del heap deberia ser 'C' despues de desencolarlo")
-	r.EqualValues(2, heap.Cantidad(), "el heap deberia contener dos elementos despues de desencolar el maximo")
-	r.Equal("B", heap.VerMax(), "el maximo del heap deberia ser 'B'")
-	r.Equal("B", heap.Desencolar(), "el maximo del heap deberia ser 'B' despues de desencolarlo")
-	r.EqualValues(1, heap.Cantidad(), "el heap deberia contener un elemento despues de desencolar el maximo")
-	r.Equal("A", heap.VerMax(), "el maximo del heap deberia ser 'A'")
-	r.Equal("A", heap.Desencolar(), "el maximo del heap deberia ser 'A' despues de desencolarlo")
-	r.EqualValues(0, heap.Cantidad(), "el heap deberia estar vacio despues de desencolar el maximo")
-}
-func Test_EncolarYDesencolarInt(t *testing.T) {
-	heap, r := TDAHeap.CrearHeap(compararNumeros), require.New(t)
-	heap.Encolar(3)
-	heap.Encolar(1)
-	heap.Encolar(2)
-	r.EqualValues(3, heap.Cantidad(), "el heap deberia contener tres elementos despues de encolarlos")
-	r.Equal(3, heap.VerMax(), "el maximo del heap deberia ser 3")
-	r.Equal(3, heap.Desencolar(), "el maximo del heap deberia ser 3 despues de desencolarlo")
-	r.EqualValues(2, heap.Cantidad(), "el heap deberia contener dos elementos despues de desencolar el maximo")
-	r.Equal(2, heap.VerMax(), "el maximo del heap deberia ser 2")
-	r.Equal(2, heap.Desencolar(), "el maximo del heap deberia ser 2 despues de desencolarlo")
-	r.EqualValues(1, heap.Cantidad(), "el heap deberia contener un elemento despues de desencolar el maximo")
-	r.Equal(1, heap.VerMax(), "el maximo del heap deberia ser 1")
-	r.Equal(1, heap.Desencolar(), "el maximo del heap deberia ser 1 despues de desencolarlo")
-	r.EqualValues(0, heap.Cantidad(), "el heap deberia estar vacio despues de desencolar el maximo")
-}
+
 func Test_ElementosNegativos(t *testing.T) {
 	numerosConNegativos := []int{-10, -7, -4, -8, -12, -3, -1}
 	heap, r := TDAHeap.CrearHeapArr(numerosConNegativos, compararNumeros), require.New(t)
@@ -133,41 +78,83 @@ func Test_OrdenDeInsercion(t *testing.T) {
 	r.Equal(1, heap.Desencolar(), "el septimo elemento desencolado deberia ser 1")
 }
 
-func Test_CrearHeapArrNumeros(t *testing.T) {
-	numeros := []int{10, 7, 4, 8, 12, 3, 1}
-	numerosOrdenado := []int{12, 10, 8, 7, 4, 3, 1}
-	heap, r := TDAHeap.CrearHeapArr(numeros, compararNumeros), require.New(t)
-	r.EqualValues(len(numeros), heap.Cantidad(), "el heap de enteros deberia contener la misma cantidad de elementos que el arreglo")
-	for _, v := range numerosOrdenado {
-		r.Equal(v, heap.Desencolar(), "el elemento desencolado deberia ser igual al elemento en la misma posicion del arreglo ordenado")
+func Test_Volumen(t *testing.T) {
+	const cantidad = 10000
+	heap, r := TDAHeap.CrearHeap(compararNumeros), require.New(t)
+
+	for i := 0; i < cantidad; i++ {
+		heap.Encolar(i)
 	}
-	r.True(heap.EstaVacia(), "el heap de enteros deberia estar vacio despues de desencolar todos los elementos")
+	r.EqualValues(cantidad, heap.Cantidad(), "el heap debería tener todos los elementos encolados")
+
+	for i := cantidad - 1; i >= 0; i-- {
+		r.EqualValues(i, heap.Desencolar(), "debería desencolar los elementos en orden descendente")
+	}
+	r.True(heap.EstaVacia(), "el heap debería quedar vacío tras desencolar todo")
 }
 
-/* */
-var _ARREGLO_TEST = []int{7, 1, 2, 3, 30, 10, 80}
+func Test_HeapSortEnteros(t *testing.T) {
+	arreglo := []int{5, 3, 8, 1, 9, 2}
+	esperado := []int{1, 2, 3, 5, 8, 9}
+	TDAHeap.HeapSort(arreglo, compararNumeros)
+	require.Equal(t, esperado, arreglo, "HeapSort no ordenó correctamente")
+}
 
-func TestHeapVacia(t *testing.T) {
-	heap, require := TDAHeap.CrearHeap(compararNumeros), require.New(t)
-	require.True(heap.EstaVacia(), "La cola deberia estar vacia ni bien es creada.")
-	require.EqualValues(heap.Cantidad(), 0, "La cola deberia tener cantidad 0 ni bien es creada.")
-}
-func TestHeapArr(t *testing.T) {
-	heap, require := TDAHeap.CrearHeapArr(_ARREGLO_TEST, compararNumeros), require.New(t)
-	require.False(heap.EstaVacia(), "La cola deberia estar vacia ni bien es creada.")
-	heap.Encolar(555)
-}
-func TestHeapMax(t *testing.T) {
-	heap, require := TDAHeap.CrearHeapArr(_ARREGLO_TEST, compararNumeros), require.New(t)
-	heap.Encolar(555)
-	require.EqualValues(555, heap.VerMax())
-}
-func Test_HeapMaxEncolandoElementoAElemento(t *testing.T) {
-	heap, require := TDAHeap.CrearHeap(compararNumeros), require.New(t)
-	for _, v := range _ARREGLO_TEST {
-		heap.Encolar(v)
+func Test_HeapCreadoDesdeArregloVSManual(t *testing.T) {
+	arreglo := []int{3, 1, 4, 2, 5}
+	cmp := compararNumeros
+	heapManual := TDAHeap.CrearHeap(cmp)
+	for _, val := range arreglo {
+		heapManual.Encolar(val)
 	}
-	heap.Desencolar()
-	heap.Encolar(555)
-	require.EqualValues(555, heap.VerMax())
+	heapArr := TDAHeap.CrearHeapArr(arreglo, cmp)
+
+	for !heapManual.EstaVacia() {
+		require.Equal(t, heapManual.Desencolar(), heapArr.Desencolar(), "Ambos heaps deberían desencolar los mismos elementos en el mismo orden")
+	}
+}
+func Test_CrearHeapArrVacio(t *testing.T) {
+	arregloVacio := []int{}
+	heap := TDAHeap.CrearHeapArr(arregloVacio, compararNumeros)
+	require.True(t, heap.EstaVacia(), "Heap creado desde arreglo vacío debería estar vacío")
+	heap.Encolar(2)
+	require.Equal(t, heap.Desencolar(), 2)
+}
+
+func Test_ReutilizarHeap(t *testing.T) {
+	heap := TDAHeap.CrearHeap(compararNumeros)
+	heap.Encolar(1)
+	heap.Encolar(2)
+	require.Equal(t, 2, heap.Desencolar())
+	require.Equal(t, 1, heap.Desencolar())
+	require.True(t, heap.EstaVacia())
+
+	heap.Encolar(99)
+	require.Equal(t, 99, heap.VerMax(), "El heap debería seguir funcionando después de vaciarse")
+}
+func Test_VolumenVerMax(t *testing.T) {
+	const N = 5000
+	heap := TDAHeap.CrearHeap(compararNumeros)
+	for i := 0; i < N; i++ {
+		heap.Encolar(i)
+		require.Equal(t, i, heap.VerMax(), "El máximo debería ser el último insertado")
+	}
+}
+func Test_HeapSortDuplicados(t *testing.T) {
+	arreglo := []int{4, 4, 4, 4}
+	TDAHeap.HeapSort(arreglo, compararNumeros)
+	require.Equal(t, []int{4, 4, 4, 4}, arreglo)
+}
+
+func Test_HeapSortConStruct(t *testing.T) {
+	type persona struct {
+		nombre string
+		edad   int
+	}
+	personas := []persona{{"Ana", 25}, {"Juan", 30}, {"Pedro", 20}}
+	cmp := func(a, b persona) int { return a.edad - b.edad }
+
+	TDAHeap.HeapSort(personas, cmp)
+
+	require.Equal(t, []persona{{"Pedro", 20}, {"Ana", 25}, {"Juan", 30}}, personas)
 }
