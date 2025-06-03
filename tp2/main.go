@@ -55,7 +55,14 @@ func procesarComando(comando string, sistemaVuelos *sistema.Sistema) error {
 		codigo := partes[1]
 		return sistemaVuelos.InfoVuelo(codigo)
 	case "prioridad_vuelos":
-		return nil
+		if len(partes) != 2 {
+		return fmt.Errorf("error en prioridad_vuelos")
+		}
+		n, err := strconv.Atoi(partes[1])
+		if err != nil {
+			return fmt.Errorf("error en prioridad_vuelos")
+		}
+		return sistemaVuelos.Prioridad_vuelos(n)
 	case "siguiente_vuelo":
 		return nil
 	case "borrar":

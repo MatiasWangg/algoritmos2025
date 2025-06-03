@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 	"tp2/vuelo"
+	"tdas/cola_prioridad"
 )
 
 const LAYOUT = "2006-01-02T15:04:05"
@@ -115,10 +116,6 @@ func (s *Sistema) VerTablero(cantidadDeVuelos int, modo , fechaDesde, fechaHasta
 	return nil
 }
 
-
-
-
-
 func (s *Sistema) InfoVuelo(codigo string) error {
 	if !s.vuelos.Pertenece(codigo) {
 		return fmt.Errorf("vuelo no encontrado") 
@@ -146,4 +143,32 @@ func (s *Sistema) InfoVuelo(codigo string) error {
 	return nil
 }
 
+
+func (s *Sistema) Prioridad_vuelos(k int) error {
+	vuelos := make([]*vuelo.Vuelo, 0, s.vuelos.Cantidad())
+
+	s.vuelos.Iterar(func(codigo string, vuelo *vuelo.Vuelo) bool {
+		vuelos = append(vuelos, vuelo)
+		return true
+	})
+
+	heap := cola_prioridad.CrearHeapArr(vuelos, func(a, b *vuelo.Vuelo) int {
+		if a.Prioridad != b.Prioridad {
+			return a.Prioridad - b.Prioridad 
+		}
+		if a.Codigo < b.Codigo {
+			return 1
+		} else if a.Codigo > b.Codigo {
+			return -1
+		}
+		return 0
+	})
+
+	for i := 0; i < k && !heap.EstaVacia(); i++ {
+		vuelo := heap.Desencolar()
+		fmt.Printf("%d - %s\n", vuelo.Prioridad, vuelo.Codigo)
+	}
+	
+	return nil
+}
 
