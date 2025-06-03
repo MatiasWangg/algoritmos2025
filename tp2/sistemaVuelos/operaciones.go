@@ -65,7 +65,8 @@ func (s *Sistema) AgregarArchivo(archivo string) error {
 
 		//Se ingresa el vuelo al ABB
 		fechaStr := fecha.Format(LAYOUT)
-		s.vuelosABB.Guardar(fechaStr, vuelo)
+		claveABB := fmt.Sprintf("%s|%s", fechaStr, datos[0]) // fecha + código
+		s.vuelosABB.Guardar(claveABB, vuelo)
 	}
 
 	if err := scanner.Err(); err != nil {
@@ -74,6 +75,48 @@ func (s *Sistema) AgregarArchivo(archivo string) error {
 
 	return nil
 }
+
+func (s *Sistema) VerTablero(cantidadDeVuelos int, modo , fechaDesde, fechaHasta string)error {
+	if cantidadDeVuelos <= 0  {
+		return fmt.Errorf("La cantidad de vuelos pedidos no puede ser menor o igual a 0") 
+	}else if (modo != "asc" && modo != "desc"){
+		return fmt.Errorf("Error en especificar el modo en que desea la tabla de vuelos") 
+	}else if fechaHasta < fechaDesde{
+		return fmt.Errorf("Error en especificar el rango de fechas en que se pide la tabla") 
+	}	
+	//fmt.Printf(fechaDesde ,fechaHasta)
+
+	claveInicio := fechaDesde + "|"
+	claveFin := fechaHasta + "|~" // ~ es para que tome todos los vuelos de ese día
+	iteradorRango := s.vuelosABB.IteradorRango(&claveInicio,&claveFin)
+	arrayVuelosOrdenados := []string{}
+	if !iteradorRango.HaySiguiente(){
+		fmt.Printf("No hay vuelos dentro de ese rango de fechas\n")
+	}
+	for iteradorRango.HaySiguiente(){
+		if len(arrayVuelosOrdenados) >= cantidadDeVuelos{
+			break
+		}
+		_, vueloActual := iteradorRango.VerActual()
+		fechaStr := vueloActual.Fecha.Format(LAYOUT)
+		infoRes := fmt.Sprintf("%s - %s\n", fechaStr, vueloActual.Codigo)
+		arrayVuelosOrdenados = append(arrayVuelosOrdenados, infoRes)
+		iteradorRango.Siguiente()
+	}
+	if modo == "asc"{
+		for _,info := range(arrayVuelosOrdenados){
+			fmt.Printf(info)
+		}
+	}else{
+		for i := len(arrayVuelosOrdenados)-1; i>=0; i--{
+			fmt.Printf(arrayVuelosOrdenados[i])
+		}
+	}
+	return nil
+}
+
+
+
 
 
 func (s *Sistema) InfoVuelo(codigo string) error {
@@ -87,7 +130,7 @@ func (s *Sistema) InfoVuelo(codigo string) error {
 
 	fechaStr := vuelo.Fecha.Format(LAYOUT)
 
-	fmt.Printf("%s %s %s %s %s %d %s %02d %d %d\n",
+	fmt.Printf("%s %s %s %s %s %d %s %d %d %d\n",
 		vuelo.Codigo,
 		vuelo.Aerolinea,
 		vuelo.Origen,
@@ -102,4 +145,5 @@ func (s *Sistema) InfoVuelo(codigo string) error {
 
 	return nil
 }
+
 
