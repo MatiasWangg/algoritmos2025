@@ -38,6 +38,7 @@ func procesarComando(comando string, sistemaVuelos *sistema.Sistema) error {
 
 		return sistemaVuelos.AgregarArchivo(archivo)
 
+
 	case "ver_tablero":
 		if len(partes) != 5 {
 			return fmt.Errorf("error en ver tablero")
@@ -48,25 +49,48 @@ func procesarComando(comando string, sistemaVuelos *sistema.Sistema) error {
 		fechaDesde := partes[3]
 		fechaHasta := partes[4]
 		return sistemaVuelos.VerTablero(cantidadDeVuelos, modo, fechaDesde, fechaHasta)
+<<<<<<< HEAD
+
+
+=======
+>>>>>>> 657f1d9ee874ab7844edc0b5a4cba2a088d3c568
 	case "info_vuelo":
 		if len(partes) != 2 {
 			return fmt.Errorf("error en info_vuelo")
 		}
 		codigo := partes[1]
 		return sistemaVuelos.InfoVuelo(codigo)
+
+
 	case "prioridad_vuelos":
 		if len(partes) != 2 {
+<<<<<<< HEAD
+			return fmt.Errorf("error en prioridad_vuelos")
+=======
 		return fmt.Errorf("error en prioridad_vuelos")
+>>>>>>> 657f1d9ee874ab7844edc0b5a4cba2a088d3c568
 		}
 		n, err := strconv.Atoi(partes[1])
 		if err != nil {
 			return fmt.Errorf("error en prioridad_vuelos")
 		}
 		return sistemaVuelos.Prioridad_vuelos(n)
+<<<<<<< HEAD
+
+
+=======
+>>>>>>> 657f1d9ee874ab7844edc0b5a4cba2a088d3c568
 	case "siguiente_vuelo":
 		return nil
+
+
 	case "borrar":
-		return nil
+		if len(partes)!= 3{
+			return fmt.Errorf("Error en comando borrar")
+		}
+		fechaDesde := partes[1]
+		fechaHasta := partes[2]
+		return sistemaVuelos.Borrar(fechaDesde,fechaHasta)
 	default:
 		return fmt.Errorf("comando no reconocido")
 	}

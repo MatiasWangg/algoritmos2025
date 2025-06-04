@@ -85,7 +85,6 @@ func (s *Sistema) VerTablero(cantidadDeVuelos int, modo , fechaDesde, fechaHasta
 	}else if fechaHasta < fechaDesde{
 		return fmt.Errorf("Error en especificar el rango de fechas en que se pide la tabla") 
 	}	
-	//fmt.Printf(fechaDesde ,fechaHasta)
 
 	claveInicio := fechaDesde + "|"
 	claveFin := fechaHasta + "|~" // ~ es para que tome todos los vuelos de ese día
@@ -115,6 +114,40 @@ func (s *Sistema) VerTablero(cantidadDeVuelos int, modo , fechaDesde, fechaHasta
 	}
 	return nil
 }
+
+func (s *Sistema) Borrar(fechaDesde, fechaHasta string)error {
+	if fechaHasta < fechaDesde{
+		return fmt.Errorf("Error en especificar el rango de fechas en que se quiere eliminar") 
+	}	
+	claveInicio := fechaDesde + "|"
+	claveFin := fechaHasta + "|~"
+	iteradorRango := s.vuelosABB.IteradorRango(&claveInicio,&claveFin)
+	if !iteradorRango.HaySiguiente(){
+		fmt.Printf("No hay vuelos dentro de ese rango de fechas\n")
+	}
+	for iteradorRango.HaySiguiente(){
+		claveActual, vueloActual := iteradorRango.VerActual()
+		vueloEliminado := s.vuelos.Borrar(vueloActual.Codigo)
+		s.vuelosABB.Borrar(claveActual)
+		fechaStr := vueloEliminado.Fecha.Format(LAYOUT)
+	canceladoInt := vueloEliminado.EstaCanceladoInt()
+		fmt.Printf("%s %s %s %s %s %d %s %d %d %d\n",
+		vueloEliminado.Codigo,
+		vueloEliminado.Aerolinea,
+		vueloEliminado.Origen,
+		vueloEliminado.Destino,
+		vueloEliminado.Matricula,
+		vueloEliminado.Prioridad,
+		fechaStr,
+		vueloEliminado.RetrasoSalida,
+		vueloEliminado.TiempoVuelo,
+		canceladoInt,
+	)
+	iteradorRango.Siguiente()
+	}
+	return nil
+}
+
 
 func (s *Sistema) InfoVuelo(codigo string) error {
 	if !s.vuelos.Pertenece(codigo) {
