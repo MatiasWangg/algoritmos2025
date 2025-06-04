@@ -18,7 +18,7 @@ const LAYOUT = "2006-01-02T15:04:05"
 func (s *Sistema) AgregarArchivo(archivo string) error {
 	contenido, err := os.Open(archivo)
 	if err != nil {
-		return fmt.Errorf("error al abrir el archivo")
+		return fmt.Errorf("Error en comando agregar_archivo")
 	}
 	defer contenido.Close()
 
@@ -94,9 +94,6 @@ func (s *Sistema) VerTablero(cantidadDeVuelos int, modo , fechaDesde, fechaHasta
 		fmt.Printf("No hay vuelos dentro de ese rango de fechas\n")
 	}
 	for iteradorRango.HaySiguiente(){
-		if len(arrayVuelosOrdenados) >= cantidadDeVuelos{
-			break
-		}
 		_, vueloActual := iteradorRango.VerActual()
 		fechaStr := vueloActual.Fecha.Format(LAYOUT)
 		infoRes := fmt.Sprintf("%s - %s\n", fechaStr, vueloActual.Codigo)
@@ -104,11 +101,11 @@ func (s *Sistema) VerTablero(cantidadDeVuelos int, modo , fechaDesde, fechaHasta
 		iteradorRango.Siguiente()
 	}
 	if modo == "asc"{
-		for _,info := range(arrayVuelosOrdenados){
-			fmt.Printf(info)
+		for i := 0; i< cantidadDeVuelos && i <len(arrayVuelosOrdenados); i++{
+			fmt.Printf(arrayVuelosOrdenados[i])
 		}
 	}else{
-		for i := len(arrayVuelosOrdenados)-1; i>=0; i--{
+		for i := len(arrayVuelosOrdenados)-1; i>= len(arrayVuelosOrdenados) - cantidadDeVuelos; i--{
 			fmt.Printf(arrayVuelosOrdenados[i])
 		}
 	}
@@ -125,25 +122,30 @@ func (s *Sistema) Borrar(fechaDesde, fechaHasta string)error {
 	if !iteradorRango.HaySiguiente(){
 		fmt.Printf("No hay vuelos dentro de ese rango de fechas\n")
 	}
+	clavesABBAeliminar := []string{}
+
 	for iteradorRango.HaySiguiente(){
 		claveActual, vueloActual := iteradorRango.VerActual()
 		vueloEliminado := s.vuelos.Borrar(vueloActual.Codigo)
-		s.vuelosABB.Borrar(claveActual)
+		clavesABBAeliminar = append(clavesABBAeliminar, claveActual)
 		fechaStr := vueloEliminado.Fecha.Format(LAYOUT)
-	canceladoInt := vueloEliminado.EstaCanceladoInt()
+		canceladoInt := vueloEliminado.EstaCanceladoInt()
 		fmt.Printf("%s %s %s %s %s %d %s %d %d %d\n",
-		vueloEliminado.Codigo,
-		vueloEliminado.Aerolinea,
-		vueloEliminado.Origen,
-		vueloEliminado.Destino,
-		vueloEliminado.Matricula,
-		vueloEliminado.Prioridad,
-		fechaStr,
-		vueloEliminado.RetrasoSalida,
-		vueloEliminado.TiempoVuelo,
-		canceladoInt,
-	)
-	iteradorRango.Siguiente()
+			vueloEliminado.Codigo,
+			vueloEliminado.Aerolinea,
+			vueloEliminado.Origen,
+			vueloEliminado.Destino,
+			vueloEliminado.Matricula,
+			vueloEliminado.Prioridad,
+			fechaStr,
+			vueloEliminado.RetrasoSalida,
+			vueloEliminado.TiempoVuelo,
+			canceladoInt,
+		)
+		iteradorRango.Siguiente()
+	}
+	for _, clave := range(clavesABBAeliminar){
+		s.vuelosABB.Borrar(clave)
 	}
 	return nil
 }
@@ -151,7 +153,7 @@ func (s *Sistema) Borrar(fechaDesde, fechaHasta string)error {
 
 func (s *Sistema) InfoVuelo(codigo string) error {
 	if !s.vuelos.Pertenece(codigo) {
-		return fmt.Errorf("vuelo no encontrado") 
+		return fmt.Errorf("Error en comando info_vuelo") 
 	}
 
 	vuelo:= s.vuelos.Obtener(codigo)

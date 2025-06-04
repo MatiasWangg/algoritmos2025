@@ -32,7 +32,7 @@ func procesarComando(comando string, sistemaVuelos *sistema.Sistema) error {
 	switch partes[0] {
 	case "agregar_archivo":
 		if len(partes) != 2 {
-			return fmt.Errorf("error en agregar archivo")
+			return fmt.Errorf("Error en comando agregar_archivo")
 		}
 		archivo := partes[1]
 
@@ -41,22 +41,22 @@ func procesarComando(comando string, sistemaVuelos *sistema.Sistema) error {
 
 	case "ver_tablero":
 		if len(partes) != 5 {
-			return fmt.Errorf("error en ver tablero")
+			return fmt.Errorf("Error en comando ver_tablero")
 		}
 
-		cantidadDeVuelos, _ := strconv.Atoi(partes[1])
+		cantidadDeVuelos, err := strconv.Atoi(partes[1])
+		if err != nil {
+			return fmt.Errorf("Error en comando prioridad_vuelos")
+		}
 		modo := partes[2]
 		fechaDesde := partes[3]
 		fechaHasta := partes[4]
 		return sistemaVuelos.VerTablero(cantidadDeVuelos, modo, fechaDesde, fechaHasta)
-<<<<<<< HEAD
 
 
-=======
->>>>>>> 657f1d9ee874ab7844edc0b5a4cba2a088d3c568
 	case "info_vuelo":
 		if len(partes) != 2 {
-			return fmt.Errorf("error en info_vuelo")
+			return fmt.Errorf("Error en comando info_vuelo")
 		}
 		codigo := partes[1]
 		return sistemaVuelos.InfoVuelo(codigo)
@@ -64,22 +64,19 @@ func procesarComando(comando string, sistemaVuelos *sistema.Sistema) error {
 
 	case "prioridad_vuelos":
 		if len(partes) != 2 {
-<<<<<<< HEAD
-			return fmt.Errorf("error en prioridad_vuelos")
-=======
-		return fmt.Errorf("error en prioridad_vuelos")
->>>>>>> 657f1d9ee874ab7844edc0b5a4cba2a088d3c568
+			return fmt.Errorf("Error en comando prioridad_vuelos")
 		}
 		n, err := strconv.Atoi(partes[1])
+		if n <= 0 {
+			return fmt.Errorf("Error en comando prioridad_vuelos")
+		}
+
 		if err != nil {
-			return fmt.Errorf("error en prioridad_vuelos")
+			return fmt.Errorf("Error en comando prioridad_vuelos")
 		}
 		return sistemaVuelos.Prioridad_vuelos(n)
-<<<<<<< HEAD
 
 
-=======
->>>>>>> 657f1d9ee874ab7844edc0b5a4cba2a088d3c568
 	case "siguiente_vuelo":
 		return nil
 
@@ -92,13 +89,13 @@ func procesarComando(comando string, sistemaVuelos *sistema.Sistema) error {
 		fechaHasta := partes[2]
 		return sistemaVuelos.Borrar(fechaDesde,fechaHasta)
 	default:
-		return fmt.Errorf("comando no reconocido")
+		return fmt.Errorf("Error en comando %s", partes[0])
 	}
 }
 
 func imprimirResultado(resultado error) {
 	if resultado != nil {
-		fmt.Fprintf(os.Stderr, "Error en el comando %s \n", resultado)
+		fmt.Fprintf(os.Stderr, "%s\n", resultado)
 	} else {
 		fmt.Println("OK")
 	}
