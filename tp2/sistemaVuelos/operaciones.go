@@ -217,6 +217,7 @@ func (s *Sistema) SiguienteVuelo(origen, destino string, fecha time.Time) error 
 		}
 		iterador.Siguiente()
 	}
-
-	return fmt.Errorf("No hay vuelo registrado desde %s hacia %s desde %s", origen, destino, fechaStr)
+	
+	fmt.Printf("No hay vuelo registrado desde %s hacia %s desde %s\n", origen, destino, fechaStr)
+	return nil
 }
