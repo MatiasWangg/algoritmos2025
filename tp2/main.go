@@ -7,7 +7,9 @@ import (
 	"strconv"
 	"strings"
 	sistema "tp2/sistemaVuelos"
+	"time"
 )
+const _LAYOUT = "2006-01-02T15:04:05"
 
 func main() {
 	scanner := bufio.NewScanner(os.Stdin)
@@ -78,8 +80,18 @@ func procesarComando(comando string, sistemaVuelos *sistema.Sistema) error {
 
 
 	case "siguiente_vuelo":
-		return nil
+		if len(partes) != 4 {
+		return fmt.Errorf("Error en comando siguiente_vuelo")
+		}
 
+		origen := partes[1]
+		destino := partes[2]
+		fecha, err := time.Parse(_LAYOUT, partes[3])
+		if err != nil {
+			return fmt.Errorf("Error en comando siguiente_vuelo")
+		}
+
+		return sistemaVuelos.SiguienteVuelo(origen, destino, fecha)
 
 	case "borrar":
 		if len(partes)!= 3{

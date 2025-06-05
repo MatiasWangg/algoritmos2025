@@ -32,10 +32,22 @@ func CrearVuelo(codigo, aerolinea, origen, destino, matricula string, prioridad,
 	return vuelo
 }
 
-//Crear Primitivas como "Obtener..." para cuando se necesite
 func (v *Vuelo) EstaCanceladoInt() int {
 	if v.Cancelado {
 		return 1
 	}
 	return 0
 }
+
+func (v *Vuelo) ObtenerOrigen() string {
+	return v.Origen
+}
+
+func (v *Vuelo) ObtenerDestino() string {
+	return v.Destino
+}
+
+func (v *Vuelo) ObtenerFecha() time.Time {
+	return v.Fecha
+}
+
