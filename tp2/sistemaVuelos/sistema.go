@@ -24,9 +24,3 @@ func CrearSistema() *Sistema {
 	})
 	return sistema
 }
-
-//Firmas de primitivas provisorias 
-
-// func (s *Sistema) SiguienteVuelo() ()
-
-// func (s *Sistema) Borrar()

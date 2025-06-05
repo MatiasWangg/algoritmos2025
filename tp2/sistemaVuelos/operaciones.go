@@ -11,9 +11,7 @@ import (
 	"tdas/cola_prioridad"
 )
 
-const LAYOUT = "2006-01-02T15:04:05"
-
-//Lugar donde se van a implementar las firmas de primitivas
+const _LAYOUT = "2006-01-02T15:04:05"
 
 func (s *Sistema) AgregarArchivo(archivo string) error {
 	contenido, err := os.Open(archivo)
@@ -35,7 +33,7 @@ func (s *Sistema) AgregarArchivo(archivo string) error {
 			return fmt.Errorf("error al parsear prioridad")
 		}
 
-		fecha, err := time.Parse(LAYOUT, datos[6])
+		fecha, err := time.Parse(_LAYOUT, datos[6])
 		if err != nil {
 			return fmt.Errorf("error al parsear fecha")
 		}
@@ -65,7 +63,7 @@ func (s *Sistema) AgregarArchivo(archivo string) error {
 		s.vuelos.Guardar(datos[0], vuelo)
 
 		//Se ingresa el vuelo al ABB
-		fechaStr := fecha.Format(LAYOUT)
+		fechaStr := fecha.Format(_LAYOUT)
 		claveABB := fmt.Sprintf("%s|%s", fechaStr, datos[0]) // fecha + código
 		s.vuelosABB.Guardar(claveABB, vuelo)
 	}
@@ -95,7 +93,7 @@ func (s *Sistema) VerTablero(cantidadDeVuelos int, modo , fechaDesde, fechaHasta
 	}
 	for iteradorRango.HaySiguiente(){
 		_, vueloActual := iteradorRango.VerActual()
-		fechaStr := vueloActual.Fecha.Format(LAYOUT)
+		fechaStr := vueloActual.Fecha.Format(_LAYOUT)
 		infoRes := fmt.Sprintf("%s - %s\n", fechaStr, vueloActual.Codigo)
 		arrayVuelosOrdenados = append(arrayVuelosOrdenados, infoRes)
 		iteradorRango.Siguiente()
@@ -128,7 +126,7 @@ func (s *Sistema) Borrar(fechaDesde, fechaHasta string)error {
 		claveActual, vueloActual := iteradorRango.VerActual()
 		vueloEliminado := s.vuelos.Borrar(vueloActual.Codigo)
 		clavesABBAeliminar = append(clavesABBAeliminar, claveActual)
-		fechaStr := vueloEliminado.Fecha.Format(LAYOUT)
+		fechaStr := vueloEliminado.Fecha.Format(_LAYOUT)
 		canceladoInt := vueloEliminado.EstaCanceladoInt()
 		fmt.Printf("%s %s %s %s %s %d %s %d %d %d\n",
 			vueloEliminado.Codigo,
@@ -160,7 +158,7 @@ func (s *Sistema) InfoVuelo(codigo string) error {
 
 	canceladoInt := vuelo.EstaCanceladoInt()
 
-	fechaStr := vuelo.Fecha.Format(LAYOUT)
+	fechaStr := vuelo.Fecha.Format(_LAYOUT)
 
 	fmt.Printf("%s %s %s %s %s %d %s %d %d %d\n",
 		vuelo.Codigo,
@@ -207,3 +205,18 @@ func (s *Sistema) Prioridad_vuelos(k int) error {
 	return nil
 }
 
+func (s *Sistema) SiguienteVuelo(origen, destino string, fecha time.Time) error {
+	fechaStr := fecha.Format(_LAYOUT)
+	iterador := s.vuelosABB.IteradorRango(&fechaStr, nil)
+
+	for iterador.HaySiguiente() {
+		_, vuelo := iterador.VerActual()
+		if vuelo.ObtenerOrigen() == origen && vuelo.ObtenerDestino() == destino {
+			s.InfoVuelo(vuelo.Codigo)
+			return nil 
+		}
+		iterador.Siguiente()
+	}
+
+	return fmt.Errorf("No hay vuelo registrado desde %s hacia %s desde %s", origen, destino, fechaStr)
+}
