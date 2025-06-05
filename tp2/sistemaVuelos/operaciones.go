@@ -93,9 +93,12 @@ func (s *Sistema) VerTablero(cantidadDeVuelos int, modo , fechaDesde, fechaHasta
 	}
 	for iteradorRango.HaySiguiente(){
 		_, vueloActual := iteradorRango.VerActual()
-		fechaStr := vueloActual.Fecha.Format(_LAYOUT)
-		infoRes := fmt.Sprintf("%s - %s\n", fechaStr, vueloActual.Codigo)
-		arrayVuelosOrdenados = append(arrayVuelosOrdenados, infoRes)
+		fechaVuelo := s.vuelos.Obtener(vueloActual.Codigo).Fecha//vueloActual.Fecha.Format(_LAYOUT)
+		fechaStr := fechaVuelo.Format(_LAYOUT)
+		if fechaStr <= fechaHasta && fechaStr >= fechaDesde{
+			infoRes := fmt.Sprintf("%s - %s\n", fechaStr, vueloActual.Codigo)
+			arrayVuelosOrdenados = append(arrayVuelosOrdenados, infoRes)
+		}
 		iteradorRango.Siguiente()
 	}
 	if modo == "asc"{
@@ -103,7 +106,7 @@ func (s *Sistema) VerTablero(cantidadDeVuelos int, modo , fechaDesde, fechaHasta
 			fmt.Printf(arrayVuelosOrdenados[i])
 		}
 	}else{
-		for i := len(arrayVuelosOrdenados)-1; i>= len(arrayVuelosOrdenados) - cantidadDeVuelos; i--{
+		for i := len(arrayVuelosOrdenados)-1; i>= len(arrayVuelosOrdenados) - cantidadDeVuelos && i >= 0 ; i--{
 			fmt.Printf(arrayVuelosOrdenados[i])
 		}
 	}
@@ -124,22 +127,25 @@ func (s *Sistema) Borrar(fechaDesde, fechaHasta string)error {
 
 	for iteradorRango.HaySiguiente(){
 		claveActual, vueloActual := iteradorRango.VerActual()
-		vueloEliminado := s.vuelos.Borrar(vueloActual.Codigo)
-		clavesABBAeliminar = append(clavesABBAeliminar, claveActual)
-		fechaStr := vueloEliminado.Fecha.Format(_LAYOUT)
-		canceladoInt := vueloEliminado.EstaCanceladoInt()
-		fmt.Printf("%s %s %s %s %s %d %s %d %d %d\n",
-			vueloEliminado.Codigo,
-			vueloEliminado.Aerolinea,
-			vueloEliminado.Origen,
-			vueloEliminado.Destino,
-			vueloEliminado.Matricula,
-			vueloEliminado.Prioridad,
-			fechaStr,
-			vueloEliminado.RetrasoSalida,
-			vueloEliminado.TiempoVuelo,
-			canceladoInt,
-		)
+		fechaVuelo := s.vuelos.Obtener(vueloActual.Codigo).Fecha
+		fechaStr := fechaVuelo.Format(_LAYOUT)
+		if fechaStr <= fechaHasta && fechaStr >= fechaDesde{
+			vueloEliminado := s.vuelos.Borrar(vueloActual.Codigo)
+			clavesABBAeliminar = append(clavesABBAeliminar, claveActual)
+			canceladoInt := vueloEliminado.EstaCanceladoInt()
+			fmt.Printf("%s %s %s %s %s %d %s %d %d %d\n",
+				vueloEliminado.Codigo,
+				vueloEliminado.Aerolinea,
+				vueloEliminado.Origen,
+				vueloEliminado.Destino,
+				vueloEliminado.Matricula,
+				vueloEliminado.Prioridad,
+				fechaStr,
+				vueloEliminado.RetrasoSalida,
+				vueloEliminado.TiempoVuelo,
+				canceladoInt,
+			)
+		}
 		iteradorRango.Siguiente()
 	}
 	for _, clave := range(clavesABBAeliminar){
@@ -217,7 +223,7 @@ func (s *Sistema) SiguienteVuelo(origen, destino string, fecha time.Time) error 
 		}
 		iterador.Siguiente()
 	}
-	
+
 	fmt.Printf("No hay vuelo registrado desde %s hacia %s desde %s\n", origen, destino, fechaStr)
 	return nil
 }
