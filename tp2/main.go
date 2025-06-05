@@ -48,7 +48,7 @@ func procesarComando(comando string, sistemaVuelos *sistema.Sistema) error {
 
 		cantidadDeVuelos, err := strconv.Atoi(partes[1])
 		if err != nil {
-			return fmt.Errorf("Error en comando prioridad_vuelos")
+			return fmt.Errorf("Error en comando ver_tablero")
 		}
 		modo := partes[2]
 		fechaDesde := partes[3]

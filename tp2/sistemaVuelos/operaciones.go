@@ -58,7 +58,12 @@ func (s *Sistema) AgregarArchivo(archivo string) error {
 			datos[0], datos[1], datos[2], datos[3], datos[4],
 			prioridad, retraso, tiempo, fecha, cancelado,
 		)
-
+		if s.vuelos.Pertenece(datos[0]){
+			fechaAntigua := s.vuelos.Obtener(datos[0]).Fecha
+			fechaStr := fechaAntigua.Format(_LAYOUT)
+			claveAntigua := fmt.Sprintf("%s|%s", fechaStr, datos[0])
+			s.vuelosABB.Borrar(claveAntigua)
+		}
 		//Se ingresa el vuelo al Hash
 		s.vuelos.Guardar(datos[0], vuelo)
 
@@ -77,28 +82,23 @@ func (s *Sistema) AgregarArchivo(archivo string) error {
 
 func (s *Sistema) VerTablero(cantidadDeVuelos int, modo , fechaDesde, fechaHasta string)error {
 	if cantidadDeVuelos <= 0  {
-		return fmt.Errorf("La cantidad de vuelos pedidos no puede ser menor o igual a 0") 
+		return fmt.Errorf("Error en comando ver_tablero") 
 	}else if (modo != "asc" && modo != "desc"){
-		return fmt.Errorf("Error en especificar el modo en que desea la tabla de vuelos") 
+		return fmt.Errorf("Error en comando ver_tablero") 
 	}else if fechaHasta < fechaDesde{
-		return fmt.Errorf("Error en especificar el rango de fechas en que se pide la tabla") 
+		return fmt.Errorf("Error en comando ver_tablero") 
 	}	
 
 	claveInicio := fechaDesde + "|"
 	claveFin := fechaHasta + "|~" // ~ es para que tome todos los vuelos de ese día
 	iteradorRango := s.vuelosABB.IteradorRango(&claveInicio,&claveFin)
 	arrayVuelosOrdenados := []string{}
-	if !iteradorRango.HaySiguiente(){
-		fmt.Printf("No hay vuelos dentro de ese rango de fechas\n")
-	}
+	
 	for iteradorRango.HaySiguiente(){
 		_, vueloActual := iteradorRango.VerActual()
-		fechaVuelo := s.vuelos.Obtener(vueloActual.Codigo).Fecha//vueloActual.Fecha.Format(_LAYOUT)
-		fechaStr := fechaVuelo.Format(_LAYOUT)
-		if fechaStr <= fechaHasta && fechaStr >= fechaDesde{
-			infoRes := fmt.Sprintf("%s - %s\n", fechaStr, vueloActual.Codigo)
-			arrayVuelosOrdenados = append(arrayVuelosOrdenados, infoRes)
-		}
+		fechaStr := vueloActual.Fecha.Format(_LAYOUT)
+		infoRes := fmt.Sprintf("%s - %s\n", fechaStr, vueloActual.Codigo)
+		arrayVuelosOrdenados = append(arrayVuelosOrdenados, infoRes)
 		iteradorRango.Siguiente()
 	}
 	if modo == "asc"{
@@ -115,37 +115,31 @@ func (s *Sistema) VerTablero(cantidadDeVuelos int, modo , fechaDesde, fechaHasta
 
 func (s *Sistema) Borrar(fechaDesde, fechaHasta string)error {
 	if fechaHasta < fechaDesde{
-		return fmt.Errorf("Error en especificar el rango de fechas en que se quiere eliminar") 
+		return fmt.Errorf("Error en comando borrar") 
 	}	
 	claveInicio := fechaDesde + "|"
 	claveFin := fechaHasta + "|~"
 	iteradorRango := s.vuelosABB.IteradorRango(&claveInicio,&claveFin)
-	if !iteradorRango.HaySiguiente(){
-		fmt.Printf("No hay vuelos dentro de ese rango de fechas\n")
-	}
 	clavesABBAeliminar := []string{}
 
 	for iteradorRango.HaySiguiente(){
 		claveActual, vueloActual := iteradorRango.VerActual()
-		fechaVuelo := s.vuelos.Obtener(vueloActual.Codigo).Fecha
-		fechaStr := fechaVuelo.Format(_LAYOUT)
-		if fechaStr <= fechaHasta && fechaStr >= fechaDesde{
-			vueloEliminado := s.vuelos.Borrar(vueloActual.Codigo)
-			clavesABBAeliminar = append(clavesABBAeliminar, claveActual)
-			canceladoInt := vueloEliminado.EstaCanceladoInt()
-			fmt.Printf("%s %s %s %s %s %d %s %d %d %d\n",
-				vueloEliminado.Codigo,
-				vueloEliminado.Aerolinea,
-				vueloEliminado.Origen,
-				vueloEliminado.Destino,
-				vueloEliminado.Matricula,
-				vueloEliminado.Prioridad,
-				fechaStr,
-				vueloEliminado.RetrasoSalida,
-				vueloEliminado.TiempoVuelo,
-				canceladoInt,
-			)
-		}
+		vueloEliminado := s.vuelos.Borrar(vueloActual.Codigo)
+		clavesABBAeliminar = append(clavesABBAeliminar, claveActual)
+		fechaStr := vueloEliminado.Fecha.Format(_LAYOUT)
+		canceladoInt := vueloEliminado.EstaCanceladoInt()
+		fmt.Printf("%s %s %s %s %s %d %s %d %d %d\n",
+			vueloEliminado.Codigo,
+			vueloEliminado.Aerolinea,
+			vueloEliminado.Origen,
+			vueloEliminado.Destino,
+			vueloEliminado.Matricula,
+			vueloEliminado.Prioridad,
+			fechaStr,
+			vueloEliminado.RetrasoSalida,
+			vueloEliminado.TiempoVuelo,
+			canceladoInt,
+		)
 		iteradorRango.Siguiente()
 	}
 	for _, clave := range(clavesABBAeliminar){
