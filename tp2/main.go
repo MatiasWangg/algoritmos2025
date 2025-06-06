@@ -6,9 +6,10 @@ import (
 	"os"
 	"strconv"
 	"strings"
-	sistema "tp2/sistemaVuelos"
 	"time"
+	sistema "tp2/sistemaVuelos"
 )
+
 const _LAYOUT = "2006-01-02T15:04:05"
 
 func main() {
@@ -40,7 +41,6 @@ func procesarComando(comando string, sistemaVuelos *sistema.Sistema) error {
 
 		return sistemaVuelos.AgregarArchivo(archivo)
 
-
 	case "ver_tablero":
 		if len(partes) != 5 {
 			return fmt.Errorf("Error en comando ver_tablero")
@@ -55,14 +55,12 @@ func procesarComando(comando string, sistemaVuelos *sistema.Sistema) error {
 		fechaHasta := partes[4]
 		return sistemaVuelos.VerTablero(cantidadDeVuelos, modo, fechaDesde, fechaHasta)
 
-
 	case "info_vuelo":
 		if len(partes) != 2 {
 			return fmt.Errorf("Error en comando info_vuelo")
 		}
 		codigo := partes[1]
 		return sistemaVuelos.InfoVuelo(codigo)
-
 
 	case "prioridad_vuelos":
 		if len(partes) != 2 {
@@ -78,10 +76,9 @@ func procesarComando(comando string, sistemaVuelos *sistema.Sistema) error {
 		}
 		return sistemaVuelos.Prioridad_vuelos(n)
 
-
 	case "siguiente_vuelo":
 		if len(partes) != 4 {
-		return fmt.Errorf("Error en comando siguiente_vuelo")
+			return fmt.Errorf("Error en comando siguiente_vuelo")
 		}
 
 		origen := partes[1]
@@ -94,12 +91,12 @@ func procesarComando(comando string, sistemaVuelos *sistema.Sistema) error {
 		return sistemaVuelos.SiguienteVuelo(origen, destino, fecha)
 
 	case "borrar":
-		if len(partes)!= 3{
+		if len(partes) != 3 {
 			return fmt.Errorf("Error en comando borrar")
 		}
 		fechaDesde := partes[1]
 		fechaHasta := partes[2]
-		return sistemaVuelos.Borrar(fechaDesde,fechaHasta)
+		return sistemaVuelos.Borrar(fechaDesde, fechaHasta)
 	default:
 		return fmt.Errorf("Error en comando %s", partes[0])
 	}

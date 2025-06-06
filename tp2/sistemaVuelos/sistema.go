@@ -1,8 +1,8 @@
 package sistemavuelos
 
 import (
-	"tp2/vuelo"
 	"tdas/diccionario"
+	"tp2/vuelo"
 )
 
 type Sistema struct {
