@@ -6,9 +6,9 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"tdas/cola_prioridad"
 	"time"
 	"tp2/vuelo"
-	"tdas/cola_prioridad"
 )
 
 const _LAYOUT = "2006-01-02T15:04:05"
@@ -58,18 +58,17 @@ func (s *Sistema) AgregarArchivo(archivo string) error {
 			datos[0], datos[1], datos[2], datos[3], datos[4],
 			prioridad, retraso, tiempo, fecha, cancelado,
 		)
-		if s.vuelos.Pertenece(datos[0]){
+		if s.vuelos.Pertenece(datos[0]) {
 			fechaAntigua := s.vuelos.Obtener(datos[0]).Fecha
 			fechaStr := fechaAntigua.Format(_LAYOUT)
 			claveAntigua := fmt.Sprintf("%s|%s", fechaStr, datos[0])
 			s.vuelosABB.Borrar(claveAntigua)
 		}
-		//Se ingresa el vuelo al Hash
+
 		s.vuelos.Guardar(datos[0], vuelo)
 
-		//Se ingresa el vuelo al ABB
 		fechaStr := fecha.Format(_LAYOUT)
-		claveABB := fmt.Sprintf("%s|%s", fechaStr, datos[0]) // fecha + código
+		claveABB := fmt.Sprintf("%s|%s", fechaStr, datos[0])
 		s.vuelosABB.Guardar(claveABB, vuelo)
 	}
 
@@ -80,102 +79,72 @@ func (s *Sistema) AgregarArchivo(archivo string) error {
 	return nil
 }
 
-func (s *Sistema) VerTablero(cantidadDeVuelos int, modo , fechaDesde, fechaHasta string)error {
-	if cantidadDeVuelos <= 0  {
-		return fmt.Errorf("Error en comando ver_tablero") 
-	}else if (modo != "asc" && modo != "desc"){
-		return fmt.Errorf("Error en comando ver_tablero") 
-	}else if fechaHasta < fechaDesde{
-		return fmt.Errorf("Error en comando ver_tablero") 
-	}	
+func (s *Sistema) VerTablero(cantidadDeVuelos int, modo, fechaDesde, fechaHasta string) error {
+	if cantidadDeVuelos <= 0 {
+		return fmt.Errorf("Error en comando ver_tablero")
+	} else if modo != "asc" && modo != "desc" {
+		return fmt.Errorf("Error en comando ver_tablero")
+	} else if fechaHasta < fechaDesde {
+		return fmt.Errorf("Error en comando ver_tablero")
+	}
 
 	claveInicio := fechaDesde + "|"
-	claveFin := fechaHasta + "|~" // ~ es para que tome todos los vuelos de ese día
-	iteradorRango := s.vuelosABB.IteradorRango(&claveInicio,&claveFin)
+	claveFin := fechaHasta + "|~"
+	iteradorRango := s.vuelosABB.IteradorRango(&claveInicio, &claveFin)
 	arrayVuelosOrdenados := []string{}
-	
-	for iteradorRango.HaySiguiente(){
+
+	for iteradorRango.HaySiguiente() {
 		_, vueloActual := iteradorRango.VerActual()
-		fechaStr := vueloActual.Fecha.Format(_LAYOUT)
-		infoRes := fmt.Sprintf("%s - %s\n", fechaStr, vueloActual.Codigo)
+		fechaStr := vueloActual.ObtenerFecha().Format(_LAYOUT)
+		infoRes := fmt.Sprintf("%s - %s\n", fechaStr, vueloActual.ObtenerCodigo())
 		arrayVuelosOrdenados = append(arrayVuelosOrdenados, infoRes)
 		iteradorRango.Siguiente()
 	}
-	if modo == "asc"{
-		for i := 0; i< cantidadDeVuelos && i <len(arrayVuelosOrdenados); i++{
+	if modo == "asc" {
+		for i := 0; i < cantidadDeVuelos && i < len(arrayVuelosOrdenados); i++ {
 			fmt.Printf(arrayVuelosOrdenados[i])
 		}
-	}else{
-		for i := len(arrayVuelosOrdenados)-1; i>= len(arrayVuelosOrdenados) - cantidadDeVuelos && i >= 0 ; i--{
+	} else {
+		for i := len(arrayVuelosOrdenados) - 1; i >= len(arrayVuelosOrdenados)-cantidadDeVuelos && i >= 0; i-- {
 			fmt.Printf(arrayVuelosOrdenados[i])
 		}
 	}
 	return nil
 }
 
-func (s *Sistema) Borrar(fechaDesde, fechaHasta string)error {
-	if fechaHasta < fechaDesde{
-		return fmt.Errorf("Error en comando borrar") 
-	}	
+func (s *Sistema) Borrar(fechaDesde, fechaHasta string) error {
+	if fechaHasta < fechaDesde {
+		return fmt.Errorf("Error en comando borrar")
+	}
 	claveInicio := fechaDesde + "|"
 	claveFin := fechaHasta + "|~"
-	iteradorRango := s.vuelosABB.IteradorRango(&claveInicio,&claveFin)
+	iteradorRango := s.vuelosABB.IteradorRango(&claveInicio, &claveFin)
 	clavesABBAeliminar := []string{}
 
-	for iteradorRango.HaySiguiente(){
+	for iteradorRango.HaySiguiente() {
 		claveActual, vueloActual := iteradorRango.VerActual()
-		vueloEliminado := s.vuelos.Borrar(vueloActual.Codigo)
+		vueloEliminado := s.vuelos.Borrar(vueloActual.ObtenerCodigo())
 		clavesABBAeliminar = append(clavesABBAeliminar, claveActual)
-		fechaStr := vueloEliminado.Fecha.Format(_LAYOUT)
-		canceladoInt := vueloEliminado.EstaCanceladoInt()
-		fmt.Printf("%s %s %s %s %s %d %s %d %d %d\n",
-			vueloEliminado.Codigo,
-			vueloEliminado.Aerolinea,
-			vueloEliminado.Origen,
-			vueloEliminado.Destino,
-			vueloEliminado.Matricula,
-			vueloEliminado.Prioridad,
-			fechaStr,
-			vueloEliminado.RetrasoSalida,
-			vueloEliminado.TiempoVuelo,
-			canceladoInt,
-		)
+		imprimirVuelo(vueloEliminado)
 		iteradorRango.Siguiente()
 	}
-	for _, clave := range(clavesABBAeliminar){
+	for _, clave := range clavesABBAeliminar {
 		s.vuelosABB.Borrar(clave)
 	}
 	return nil
 }
 
-
 func (s *Sistema) InfoVuelo(codigo string) error {
 	if !s.vuelos.Pertenece(codigo) {
-		return fmt.Errorf("Error en comando info_vuelo") 
+		return fmt.Errorf("Error en comando info_vuelo")
 	}
 
-	vuelo:= s.vuelos.Obtener(codigo)
+	vuelo := s.vuelos.Obtener(codigo)
 
-	canceladoInt := vuelo.EstaCanceladoInt()
-
-	fechaStr := vuelo.Fecha.Format(_LAYOUT)
-
-	fmt.Printf("%s %s %s %s %s %d %s %d %d %d\n",
-		vuelo.Codigo,
-		vuelo.Aerolinea,
-		vuelo.Origen,
-		vuelo.Destino,
-		vuelo.Matricula,
-		vuelo.Prioridad,
-		fechaStr,
-		vuelo.RetrasoSalida,
-		vuelo.TiempoVuelo,
-		canceladoInt,
-	)
+	imprimirVuelo(vuelo)
 
 	return nil
 }
-
 
 func (s *Sistema) Prioridad_vuelos(k int) error {
 	vuelos := make([]*vuelo.Vuelo, 0, s.vuelos.Cantidad())
@@ -185,23 +154,25 @@ func (s *Sistema) Prioridad_vuelos(k int) error {
 		return true
 	})
 
-	heap := cola_prioridad.CrearHeapArr(vuelos, func(a, b *vuelo.Vuelo) int {
-		if a.Prioridad != b.Prioridad {
-			return a.Prioridad - b.Prioridad 
+	cmp := func(a, b *vuelo.Vuelo) int {
+		if a.ObtenerPrioridad() != b.ObtenerPrioridad() {
+			return a.ObtenerPrioridad() - b.ObtenerPrioridad()
 		}
-		if a.Codigo < b.Codigo {
+		if a.ObtenerCodigo() < b.ObtenerCodigo() {
 			return 1
-		} else if a.Codigo > b.Codigo {
+		} else if a.ObtenerCodigo() > b.ObtenerCodigo() {
 			return -1
 		}
 		return 0
-	})
+	}
+
+	heap := cola_prioridad.CrearHeapArr(vuelos, cmp)
 
 	for i := 0; i < k && !heap.EstaVacia(); i++ {
 		vuelo := heap.Desencolar()
-		fmt.Printf("%d - %s\n", vuelo.Prioridad, vuelo.Codigo)
+		fmt.Printf("%d - %s\n", vuelo.ObtenerPrioridad(), vuelo.ObtenerCodigo())
 	}
-	
+
 	return nil
 }
 
@@ -212,12 +183,30 @@ func (s *Sistema) SiguienteVuelo(origen, destino string, fecha time.Time) error 
 	for iterador.HaySiguiente() {
 		_, vuelo := iterador.VerActual()
 		if vuelo.ObtenerOrigen() == origen && vuelo.ObtenerDestino() == destino {
-			s.InfoVuelo(vuelo.Codigo)
-			return nil 
+			s.InfoVuelo(vuelo.ObtenerCodigo())
+			return nil
 		}
 		iterador.Siguiente()
 	}
 
 	fmt.Printf("No hay vuelo registrado desde %s hacia %s desde %s\n", origen, destino, fechaStr)
 	return nil
+}
+
+func imprimirVuelo(v *vuelo.Vuelo) {
+	canceladoInt := v.EstaCanceladoInt()
+	fechaStr := v.ObtenerFecha().Format(_LAYOUT)
+
+	fmt.Printf("%s %s %s %s %s %d %s %d %d %d\n",
+		v.ObtenerCodigo(),
+		v.ObtenerAerolinea(),
+		v.ObtenerOrigen(),
+		v.ObtenerDestino(),
+		v.ObtenerMatricula(),
+		v.ObtenerPrioridad(),
+		fechaStr,
+		v.ObtenerRetrasoSalida(),
+		v.ObtenerTiempoVuelo(),
+		canceladoInt,
+	)
 }
