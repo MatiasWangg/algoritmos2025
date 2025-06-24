@@ -29,7 +29,7 @@ class SistemaVuelos:
     def cargar_vuelos(self, vuelos):
         vuelos_totales = 0
         for informacion in vuelos:
-            vuelos_totales += float(vuelos[4])
+            vuelos_totales += float(informacion[4])
         
         for informacion in vuelos:
             aeropuerto1 = informacion[0]
