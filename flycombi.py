@@ -4,13 +4,51 @@ from grafo import Grafo
 
 class SistemaVuelos:
     def __init__(self):
-        pass
-    
+        self.conexiones = {} #Clave:(aeropuerto, aeropuerto)  Valor: [datos]
+        self.aeropuertos_en_ciudad = {}  #Clave:ciudad  Valores: [aeropuertos]
+        self.ciudad_de_aeropuerto = {} #Clave:aeropuerto  Valor: [datos]
+        self.grafo_precio = Grafo(es_dirigido=False) #camino_mas barato y nueva_aerolinea
+        self.grafo_tiempo = Grafo(es_dirigido=False) #camino_mas rapido e itinerario
+        self.grafo_frecuencia = Grafo(es_dirigido=False) #Para centralidad
+
     def cargar_aeropuertos(self, aeropuertos):
-        pass
+        for informacion in aeropuertos:
+            ciudad = informacion[0]
+            codigo_aeropuerto = informacion[1]
+            self.ciudad_de_aeropuerto[codigo_aeropuerto] = informacion
+
+            if ciudad not in self.aeropuertos_en_ciudad:
+                self.aeropuertos_en_ciudad[ciudad] = [codigo_aeropuerto]
+            else:
+                self.aeropuertos_en_ciudad[ciudad].append(codigo_aeropuerto)
+            
+            self.grafo_precio.agregar_vertice(codigo_aeropuerto)
+            self.grafo_tiempo.agregar_vertice(codigo_aeropuerto)
+            self.grafo_frecuencia.agregar_vertice(codigo_aeropuerto)
 
     def cargar_vuelos(self, vuelos):
-        pass
+        vuelos_totales = 0
+        for informacion in vuelos:
+            vuelos_totales += float(vuelos[4])
+        
+        for informacion in vuelos:
+            aeropuerto1 = informacion[0]
+            aeropuerto2 = informacion[1]
+
+            tiempo = informacion[2]
+            precio = informacion[3]
+            cantidad_vuelos = informacion[4]
+            freq = 100 * float(cantidad_vuelos)/vuelos_totales
+
+            self.grafo_precio.agregar_arista(aeropuerto1, aeropuerto2, precio)
+            self.grafo_tiempo.agregar_arista(aeropuerto1, aeropuerto2, tiempo)
+            self.grafo_frecuencia.agregar_arista(aeropuerto1, aeropuerto2, freq)
+
+            self.conexiones[aeropuerto1 + "-" + aeropuerto2] = informacion
+
+
+
+
 
 
 
