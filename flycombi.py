@@ -47,7 +47,7 @@ class SistemaVuelos:
 
             self.conexiones[aeropuerto1 + "-" + aeropuerto2] = informacion
 
-    def caminoMas(self,grafo,  desde, hasta):
+    def caminoMas(self, grafo, desde, hasta):
         padres,dist = b.camino_minimo_dijkstra(grafo, desde,hasta)
         act = hasta
         camino = []
@@ -57,6 +57,25 @@ class SistemaVuelos:
         camino.append(desde)
         return camino, dist[hasta]
     
+    def caminoEscalas(self, grafo, desde, hasta):
+        min_escalas = float("inf")
+        mejor_camino = []
+
+        for aeropuerto_origen in self.aeropuertos_en_ciudad.get(desde, []):
+            padres, distancias = b.camino_minimo_bfs(grafo, aeropuerto_origen)
+            for aeropuerto_destino in self.aeropuertos_en_ciudad.get(hasta, []):
+                if distancias[aeropuerto_destino] < min_escalas:
+                    min_escalas = distancias[aeropuerto_destino]
+                    camino = []
+                    actual = aeropuerto_destino
+                    while actual is not None:
+                        camino.append(actual)
+                        actual = padres[actual]
+                    mejor_camino = camino
+
+        mejor_camino.reverse()
+        return mejor_camino
+        
 
 def main():
     argumentos = sys.argv
@@ -75,6 +94,7 @@ def main():
     #Llamada a funcion que procese la entrada y se llame a respectivo funcion 
     for linea in sys.stdin:
         comandos = u.procesar_entrada(linea.rstrip(" "))
+
         if comandos[0] == "camino_mas":
             if len(comandos) != 4:
                 print("Error al utilizar el comando 'camino_mas'")
@@ -95,9 +115,19 @@ def main():
                 print(" -> ".join(mejor_camino))
             else:
                 print("No existe camino")
+
         elif comandos[0] == "camino_escalas":
-            pass
-            
+            if len(comandos) != 3:
+                print("Error al utilizar el comando 'camino_escalas'")
+                continue
+            origen = comandos[1]
+            destino = comandos[2]
+            camino = sistema.caminoEscalas(sistema.grafo_precio, origen, destino)
+            if camino:
+                print(" -> ".join(camino))
+            else:
+                print("No existe camino")
+                
         elif comandos[0] == "centralidad":
             pass
             
