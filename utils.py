@@ -1,4 +1,5 @@
 import csv
+from heap import Heap
 
 def procesar_informacion(archivo):
     resultado = []
@@ -27,3 +28,13 @@ def procesar_entrada(entrada):
         comando_final.append(parametro.strip())
 
     return comando_final
+
+def topK(diccionario, k):
+    resultado = []
+    heap = Heap(is_min_heap=False)
+    heap.heapify(diccionario)
+    for _ in range(k):
+        if heap.estaVacia():
+            break
+        resultado.append(heap.desencolar())
+    return resultado

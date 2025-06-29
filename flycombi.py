@@ -75,6 +75,11 @@ class SistemaVuelos:
 
         mejor_camino.reverse()
         return mejor_camino
+    
+    def centralidad(self, grafo, k):
+        centralidades = b.centralidad(grafo)
+        centralidades_topK = u.topK(centralidades, k)
+        return centralidades_topK
         
 
 def main():
@@ -129,7 +134,15 @@ def main():
                 print("No existe camino")
                 
         elif comandos[0] == "centralidad":
-            pass
+            if len(comandos) != 2:
+                print("Error al utilizar el comando 'centralidad'")
+                continue
+            k = int(comandos[1])
+            mas_importantes = sistema.centralidad(sistema.grafo_frecuencia, k)
+            if mas_importantes:
+                print(", ".join(mas_importantes))
+            else:
+                print("No existe mas importantes")
             
         elif comandos[0] == "nueva_aerolinea":
             pass
