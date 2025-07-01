@@ -1,4 +1,5 @@
 import sys
+import csv
 import utils as u
 import biblioteca as b
 from grafo import Grafo
@@ -80,6 +81,25 @@ class SistemaVuelos:
         centralidades = b.centralidad(grafo)
         centralidades_topK = u.topK(centralidades, k)
         return centralidades_topK
+    
+    def nueva_aerolinea(self, grafo, archivo):
+        arbol = b.mst_prim(grafo)
+        vuelos_escribir = []
+        for v in arbol.obtener_vertices():
+            for w in arbol.adyacentes(v):
+                nodo1 = v
+                nodo2 = w
+                if nodo1 > nodo2:
+                    nodo1, nodo2 = nodo2, nodo1
+                clave = (nodo1, nodo2)
+                datos = self.conexiones.get("-".join(clave))
+                if datos:
+                    vuelos_escribir.append(datos)
+
+        with open(archivo, "w", newline='', encoding="utf-8") as salida:
+            writer = csv.writer(salida)
+            for vuelo in vuelos_escribir:
+                writer.writerow(vuelo)
         
 
 def main():
@@ -145,8 +165,13 @@ def main():
                 print("No existe mas importantes")
             
         elif comandos[0] == "nueva_aerolinea":
-            pass
-                
+            if len(comandos) != 2:
+                print("Error al utilizar el comando 'nueva_aerolinea'")
+                continue
+            archivo = comandos[1]
+            sistema.nueva_aerolinea(sistema.grafo_precio, archivo)
+            print("OK")
+
         elif comandos[0] == "itinerario":
             pass
                 
