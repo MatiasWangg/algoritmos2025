@@ -100,6 +100,29 @@ class SistemaVuelos:
             writer = csv.writer(salida)
             for vuelo in vuelos_escribir:
                 writer.writerow(vuelo)
+    
+    def itinerario(self, grafo, archivo_itinerario):
+        informacion = u.procesar_informacion(archivo_itinerario)
+        nuevo_grafo = Grafo(es_dirigido=True)
+        for ciudad in informacion[0]:
+            nuevo_grafo.agregar_vertice(ciudad)
+        for orden in informacion[1:]:
+            nuevo_grafo.agregar_arista(orden[0], orden[1])
+        nuevo_orden = b.orden_topologico(nuevo_grafo)
+        print(", ".join(nuevo_orden))
+
+        for i in range(len(nuevo_orden) - 1):
+            origen = nuevo_orden[i]
+            destino = nuevo_orden[i+1]
+            
+            mejor_camino, _ = self.caminoMas(self.grafo_tiempo, origen, destino)
+            
+            if mejor_camino:
+                mejor_camino.reverse()
+                print(" -> ".join(mejor_camino))
+            else:
+                print(f"No existe camino entre {origen} y {destino}")
+
         
 
 def main():
@@ -173,7 +196,11 @@ def main():
             print("OK")
 
         elif comandos[0] == "itinerario":
-            pass
+            if len(comandos) != 2:
+                print("Error al utilizar el comando 'itinerario'")
+                continue
+            archivo = comandos[1]
+            sistema.itinerario(sistema.grafo_tiempo, archivo)
                 
         elif comandos[0] == "exportar_kml":
             pass
