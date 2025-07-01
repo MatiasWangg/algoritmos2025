@@ -13,6 +13,7 @@ class SistemaVuelos:
         self.grafo_precio = Grafo(es_dirigido=False) #camino_mas barato y nueva_aerolinea
         self.grafo_tiempo = Grafo(es_dirigido=False) #camino_mas rapido e itinerario
         self.grafo_frecuencia = Grafo(es_dirigido=False) #Para centralidad
+        self.ultima_ruta = []  #Para exportar_kml, se guarda la ultima ruta encontrada
 
     def cargar_aeropuertos(self, aeropuertos):
         for informacion in aeropuertos:
@@ -56,6 +57,7 @@ class SistemaVuelos:
             camino.append(act)
             act = padres[act]
         camino.append(desde)
+        self.ultima_ruta = [(camino[i], camino[i+1]) for i in range(len(camino)-1)]
         return camino, dist[hasta]
     
     def caminoEscalas(self, grafo, desde, hasta):
@@ -74,7 +76,9 @@ class SistemaVuelos:
                         actual = padres[actual]
                     mejor_camino = camino
 
-        mejor_camino.reverse()
+        mejor_camino.reverse() 
+        self.ultima_ruta = [(mejor_camino[i], mejor_camino[i+1]) for i in range(len(mejor_camino)-1)]
+
         return mejor_camino
     
     def centralidad(self, grafo, k):
@@ -111,19 +115,67 @@ class SistemaVuelos:
         nuevo_orden = b.orden_topologico(nuevo_grafo)
         print(", ".join(nuevo_orden))
 
+        self.ultima_ruta = []  # Reinicio para el nuevo itinerario
+
         for i in range(len(nuevo_orden) - 1):
-            origen = nuevo_orden[i]
-            destino = nuevo_orden[i+1]
-            
-            mejor_camino, _ = self.caminoMas(self.grafo_tiempo, origen, destino)
-            
+            ciudad_origen = nuevo_orden[i]
+            ciudad_destino = nuevo_orden[i + 1]
+
+            min_costo = float("inf")
+            mejor_camino = []
+
+            for aeropuerto_origen in self.aeropuertos_en_ciudad.get(ciudad_origen, []):
+                for aeropuerto_destino in self.aeropuertos_en_ciudad.get(ciudad_destino, []):
+                    camino_actual, costo_actual = self.caminoMas(self.grafo_tiempo, aeropuerto_origen, aeropuerto_destino)
+                    if costo_actual < min_costo:
+                        min_costo = costo_actual
+                        mejor_camino = camino_actual
+
             if mejor_camino:
                 mejor_camino.reverse()
                 print(" -> ".join(mejor_camino))
+                # Guardamos los pares consecutivos del camino para el KML
+                self.ultima_ruta.extend([(mejor_camino[i], mejor_camino[i+1]) for i in range(len(mejor_camino)-1)])
             else:
-                print(f"No existe camino entre {origen} y {destino}")
+                print(f"No existe camino entre {ciudad_origen} y {ciudad_destino}")
+    def exportar_kml(self, archivo):
+        if not self.ultima_ruta:
+            print("No hay ruta para exportar")
+            return
 
-        
+        try:
+            with open(archivo, "w", encoding="utf-8") as f:
+                # Encabezado XML y declaración KML
+                f.write('<?xml version="1.0" encoding="UTF-8"?>\n')
+                f.write('<kml xmlns="http://earth.google.com/kml/2.1">\n')
+                f.write('  <Document>\n')
+                f.write('    <name>Ruta exportada</name>\n')
+                f.write('    <description>Ruta generada por FlyCombi</description>\n')
+
+                # Generar líneas de vuelo
+                for origen, destino in self.ultima_ruta:
+                    info_origen = self.ciudad_de_aeropuerto.get(origen)
+                    info_destino = self.ciudad_de_aeropuerto.get(destino)
+                    if not info_origen or not info_destino:
+                        continue
+
+                    lat_o, lon_o = info_origen[2], info_origen[3]
+                    lat_d, lon_d = info_destino[2], info_destino[3]
+
+                    f.write('    <Placemark>\n')
+                    f.write('      <LineString>\n')
+                    f.write(f'        <coordinates>{lon_o},{lat_o} {lon_d},{lat_d}</coordinates>\n')
+                    f.write('      </LineString>\n')
+                    f.write('    </Placemark>\n')
+
+                f.write('  </Document>\n')
+                f.write('</kml>\n')
+
+            print("OK")
+
+        except Exception as e:
+            print(f"Error al exportar KML: {e}")
+
 
 def main():
     argumentos = sys.argv
@@ -203,7 +255,11 @@ def main():
             sistema.itinerario(sistema.grafo_tiempo, archivo)
                 
         elif comandos[0] == "exportar_kml":
-            pass
+            if len(comandos) != 2:
+                print("Error al utilizar el comando 'exportar_kml'")
+                continue
+            archivo = comandos[1]
+            sistema.exportar_kml(archivo)
         else:
             print("ERROR:No se reconoce el comando ingresado")
 main()
