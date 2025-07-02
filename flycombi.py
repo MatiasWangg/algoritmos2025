@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 import sys
 import csv
 import utils as u
@@ -138,6 +139,7 @@ class SistemaVuelos:
                 self.ultima_ruta.extend([(mejor_camino[i], mejor_camino[i+1]) for i in range(len(mejor_camino)-1)])
             else:
                 print(f"No existe camino entre {ciudad_origen} y {ciudad_destino}")
+
     def exportar_kml(self, archivo):
         if not self.ultima_ruta:
             print("No hay ruta para exportar")
@@ -260,6 +262,7 @@ def main():
                 continue
             archivo = comandos[1]
             sistema.exportar_kml(archivo)
+
         else:
             print("ERROR:No se reconoce el comando ingresado")
 main()

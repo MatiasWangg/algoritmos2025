@@ -1,13 +1,7 @@
 from grafo import Grafo
 from cola import Cola
 from heap import Heap
-"""
-Funciones:
-Camino Minimo: Dijkstra y BFS
-MST: Prim
-Centralidad
-Orden Topológico
-"""
+
 def grados_entrada(grafo):
     gr_entrada = {}
     for v in grafo.obtener_vertices():
