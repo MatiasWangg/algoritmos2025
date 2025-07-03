@@ -39,8 +39,8 @@ class SistemaVuelos:
             aeropuerto1 = informacion[0]
             aeropuerto2 = informacion[1]
 
-            tiempo = informacion[2]
-            precio = informacion[3]
+            tiempo = float(informacion[2])
+            precio = float(informacion[3])
             cantidad_vuelos = informacion[4]
             freq = 100 * float(cantidad_vuelos) / vuelos_totales
             if freq != 0:
@@ -95,21 +95,24 @@ class SistemaVuelos:
     def nueva_aerolinea(self, grafo, archivo):
         arbol = b.mst_prim(grafo)
         vuelos_escribir = []
+        visitados = set() 
+
         for v in arbol.obtener_vertices():
             for w in arbol.adyacentes(v):
-                nodo1 = v
-                nodo2 = w
-                if nodo1 > nodo2:
-                    nodo1, nodo2 = nodo2, nodo1
-                clave = (nodo1, nodo2)
-                datos = self.conexiones.get("-".join(clave))
-                if datos:
+                nodo1, nodo2 = sorted([v, w])
+                clave1 = f"{nodo1}-{nodo2}"
+                clave2 = f"{nodo2}-{nodo1}"
+                datos = self.conexiones.get(clave1) or self.conexiones.get(clave2)
+                
+                if datos and (clave1 not in visitados):
                     vuelos_escribir.append(datos)
+                    visitados.add(clave1)
 
         with open(archivo, "w", newline='', encoding="utf-8") as salida:
             writer = csv.writer(salida)
             for vuelo in vuelos_escribir:
                 writer.writerow(vuelo)
+
     
     def itinerario(self, grafo, archivo_itinerario):
         informacion = u.procesar_informacion(archivo_itinerario)
