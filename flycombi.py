@@ -8,13 +8,13 @@ from grafo import Grafo
 
 class SistemaVuelos:
     def __init__(self):
-        self.conexiones = {} #Clave:(aeropuerto, aeropuerto)  Valor: [datos]
-        self.aeropuertos_en_ciudad = {}  #Clave:ciudad  Valores: [aeropuertos]
-        self.ciudad_de_aeropuerto = {} #Clave:aeropuerto  Valor: [datos]
-        self.grafo_precio = Grafo(es_dirigido=False) #camino_mas barato y nueva_aerolinea
-        self.grafo_tiempo = Grafo(es_dirigido=False) #camino_mas rapido e itinerario
-        self.grafo_frecuencia = Grafo(es_dirigido=False) #Para centralidad
-        self.ultima_ruta = []  #Para exportar_kml, se guarda la ultima ruta encontrada
+        self.conexiones = {} 
+        self.aeropuertos_en_ciudad = {}  
+        self.ciudad_de_aeropuerto = {} 
+        self.grafo_precio = Grafo(es_dirigido=False) 
+        self.grafo_tiempo = Grafo(es_dirigido=False) 
+        self.grafo_frecuencia = Grafo(es_dirigido=False)
+        self.ultima_ruta = [] 
 
     def cargar_aeropuertos(self, aeropuertos):
         for informacion in aeropuertos:
@@ -42,11 +42,16 @@ class SistemaVuelos:
             tiempo = informacion[2]
             precio = informacion[3]
             cantidad_vuelos = informacion[4]
-            freq = 100 * float(cantidad_vuelos)/vuelos_totales
-
+            freq = 100 * float(cantidad_vuelos) / vuelos_totales
+            if freq != 0:
+                peso_freq = 1 / freq
+            else:
+                peso_freq = float('inf')
+                
+            self.grafo_frecuencia.agregar_arista(aeropuerto1, aeropuerto2, peso_freq)
             self.grafo_precio.agregar_arista(aeropuerto1, aeropuerto2, precio)
             self.grafo_tiempo.agregar_arista(aeropuerto1, aeropuerto2, tiempo)
-            self.grafo_frecuencia.agregar_arista(aeropuerto1, aeropuerto2, freq)
+            
 
             self.conexiones[aeropuerto1 + "-" + aeropuerto2] = informacion
 
@@ -116,7 +121,7 @@ class SistemaVuelos:
         nuevo_orden = b.orden_topologico(nuevo_grafo)
         print(", ".join(nuevo_orden))
 
-        self.ultima_ruta = []  # Reinicio para el nuevo itinerario
+        self.ultima_ruta = []  
 
         for i in range(len(nuevo_orden) - 1):
             ciudad_origen = nuevo_orden[i]
@@ -135,7 +140,7 @@ class SistemaVuelos:
             if mejor_camino:
                 mejor_camino.reverse()
                 print(" -> ".join(mejor_camino))
-                # Guardamos los pares consecutivos del camino para el KML
+                
                 self.ultima_ruta.extend([(mejor_camino[i], mejor_camino[i+1]) for i in range(len(mejor_camino)-1)])
             else:
                 print(f"No existe camino entre {ciudad_origen} y {ciudad_destino}")
@@ -147,14 +152,14 @@ class SistemaVuelos:
 
         try:
             with open(archivo, "w", encoding="utf-8") as f:
-                # Encabezado XML y declaración KML
+                
                 f.write('<?xml version="1.0" encoding="UTF-8"?>\n')
                 f.write('<kml xmlns="http://earth.google.com/kml/2.1">\n')
                 f.write('  <Document>\n')
                 f.write('    <name>Ruta exportada</name>\n')
                 f.write('    <description>Ruta generada por FlyCombi</description>\n')
 
-                # Generar líneas de vuelo
+                
                 for origen, destino in self.ultima_ruta:
                     info_origen = self.ciudad_de_aeropuerto.get(origen)
                     info_destino = self.ciudad_de_aeropuerto.get(destino)
@@ -181,19 +186,19 @@ class SistemaVuelos:
 
 def main():
     argumentos = sys.argv
-    #Funciones para recibir la informacion de los argumentos   
+       
     if len(argumentos) != 3:
         sys.exit()
     aeropuertos, vuelos = argumentos[1], argumentos[2]
     informacion_aeropuerto = u.procesar_informacion(aeropuertos)
     informacion_vuelos = u.procesar_informacion(vuelos)
 
-    #Creo el TDA y cargo la informacion recibida
+    
     sistema = SistemaVuelos()
     sistema.cargar_aeropuertos(informacion_aeropuerto)
     sistema.cargar_vuelos(informacion_vuelos)
     
-    #Llamada a funcion que procese la entrada y se llame a respectivo funcion 
+     
     for linea in sys.stdin:
         comandos = u.procesar_entrada(linea.rstrip(" "))
 
