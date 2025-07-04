@@ -63,6 +63,7 @@ class SistemaVuelos:
             camino.append(act)
             act = padres[act]
         camino.append(desde)
+        camino.reverse()
         self.ultima_ruta = [(camino[i], camino[i+1]) for i in range(len(camino)-1)]
         return camino, dist[hasta]
     
@@ -155,14 +156,31 @@ class SistemaVuelos:
 
         try:
             with open(archivo, "w", encoding="utf-8") as f:
-                
                 f.write('<?xml version="1.0" encoding="UTF-8"?>\n')
                 f.write('<kml xmlns="http://earth.google.com/kml/2.1">\n')
                 f.write('  <Document>\n')
                 f.write('    <name>Ruta exportada</name>\n')
                 f.write('    <description>Ruta generada por FlyCombi</description>\n')
 
-                
+                aeropuertos_visitados = []
+                for origen, destino in self.ultima_ruta:
+                    if origen not in aeropuertos_visitados:
+                        aeropuertos_visitados.append(origen)
+                    if destino not in aeropuertos_visitados:
+                        aeropuertos_visitados.append(destino)
+
+                for aeropuerto in aeropuertos_visitados:
+                    info = self.ciudad_de_aeropuerto.get(aeropuerto)
+                    if info:
+                        codigo_iata = info[1]
+                        lat, lon = info[2], info[3]
+                        f.write('    <Placemark>\n')
+                        f.write(f'      <name>{codigo_iata}</name>\n') 
+                        f.write('      <Point>\n')
+                        f.write(f'        <coordinates>{lon},{lat}</coordinates>\n')
+                        f.write('      </Point>\n')
+                        f.write('    </Placemark>\n')
+
                 for origen, destino in self.ultima_ruta:
                     info_origen = self.ciudad_de_aeropuerto.get(origen)
                     info_destino = self.ciudad_de_aeropuerto.get(destino)
@@ -185,6 +203,8 @@ class SistemaVuelos:
 
         except Exception as e:
             print(f"Error al exportar KML: {e}")
+
+
 
 
 def main():
